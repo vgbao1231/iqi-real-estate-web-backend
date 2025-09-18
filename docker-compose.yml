@@ -1,0 +1,42 @@
+version: '3.8'
+services:
+  mysql:
+    image: mysql:8
+    container_name: iqi-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 123123 # đổi password ở đây
+      MYSQL_DATABASE: iqi_db
+    ports:
+      - '3306:3306'
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ['CMD-SHELL', 'mysqladmin ping -h localhost -p123123'] # đổi pass ở đây luôn
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: iqi-api
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: 'mysql://root:123123@mysql:3306/iqi_db'
+      JWT_SECRET: 'supersecret'
+      PORT: 8080
+      CHOKIDAR_USEPOLLING: 'true' # Bật chế độ polling cho chắc
+    ports:
+      - '8080:8080'
+    volumes:
+      - .:/app
+      - /app/node_modules
+    working_dir: /app
+    command: npm run start:dev
+
+volumes:
+  mysql_data:

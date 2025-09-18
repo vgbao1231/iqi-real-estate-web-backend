@@ -1,0 +1,74 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  MARKETING
+  SALE
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      UserRole @default(ADMIN)
+  isActive  Boolean  @default(true)
+  avatar    String?
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdProjects Project[] @relation("ProjectsCreated")
+  updatedProjects Project[] @relation("ProjectsUpdated")
+}
+
+model Partner {
+  id        String   @id @default(uuid())
+  name      String
+  email     String?
+  phone     String?
+  createdAt DateTime @default(now())
+}
+
+model News {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  published Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Project {
+  id           String   @id @default(uuid())
+  isFeatured   Boolean  @default(false)
+  isExclusive  Boolean  @default(false)
+  visibleOnWeb Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  createdBy    String
+  updatedBy    String?
+
+  // Các tab
+  introduction Json?
+  overview     Json?
+  location     Json?
+  siteplan     Json?
+  production   Json?
+  amenity      Json?
+  timeline     Json?
+  contact      Json?
+  other        Json?
+
+  // Quan hệ với User
+  creator User  @relation("ProjectsCreated", fields: [createdBy], references: [id])
+  updater User? @relation("ProjectsUpdated", fields: [updatedBy], references: [id])
+}

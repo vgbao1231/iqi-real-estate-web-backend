@@ -1,0 +1,24 @@
+// auth.module.ts
+import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import { PrismaModule } from 'src/prisma/prisma.module'; // đường dẫn tùy project
+import { PrismaService } from 'src/prisma/prisma.service';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
+import { JwtStrategy } from './jwt.strategy';
+
+@Module({
+  imports: [
+    PrismaModule,
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'secret-key',
+      signOptions: { expiresIn: '1d' },
+    }),
+  ],
+  providers: [AuthService, JwtStrategy, PrismaService],
+  controllers: [AuthController],
+  exports: [AuthService],
+})
+export class AuthModule {}
