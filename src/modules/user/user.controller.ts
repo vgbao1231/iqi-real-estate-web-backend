@@ -4,14 +4,16 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
-  Put,
   UseGuards,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
+import { CreateUserDto } from './dto/CreateUserDto';
 import { UpdateUserDto } from './dto/UpdateUserDto';
-import { UsersService } from './users.service';
+import { UsersService } from './user.service';
 
 @Controller('users')
 export class UsersController {
@@ -25,11 +27,12 @@ export class UsersController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  create(@Body() data: Prisma.UserCreateInput) {
+  create(@Body() data: CreateUserDto) {
     return this.usersService.create(data);
   }
 
-  @Put(':id')
+  @Patch(':id')
+  @UsePipes(new ValidationPipe({ whitelist: true }))
   @UseGuards(JwtAuthGuard)
   update(@Param('id') id: string, @Body() data: UpdateUserDto) {
     return this.usersService.update(id, data);

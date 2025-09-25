@@ -15,27 +15,47 @@ enum UserRole {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      UserRole @default(ADMIN)
-  isActive  Boolean  @default(true)
-  avatar    String?
-  phone     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String   @id @default(uuid())
+  name           String
+  email          String   @unique
+  password       String
+  role           UserRole @default(ADMIN)
+  isActive       Boolean  @default(true)
+  avatarUrl      String?
+  avatarPublicId String?
+  phone          String?  @unique
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   createdProjects Project[] @relation("ProjectsCreated")
   updatedProjects Project[] @relation("ProjectsUpdated")
 }
 
+enum PartnerCategory {
+  DEVELOPER // Chủ đầu tư
+  INTERNATIONAL // Đối tác quốc tế
+  BANK // Đối tác ngân hàng
+}
+
 model Partner {
-  id        String   @id @default(uuid())
-  name      String
-  email     String?
-  phone     String?
-  createdAt DateTime @default(now())
+  id               String          @id @default(uuid())
+  name             String
+  category         PartnerCategory @default(DEVELOPER)
+  shortDescription String?
+  description      String?
+  countryCount     Int?
+  agentCount       Int?
+  projectCount     Int?
+  partnershipYear  Int?
+  specialties      Json?
+  achievements     Json?
+  logoUrl          String?
+  logoPublicId     String?
+  loanRate         Float?
+  maxLoan          Float?
+  revenue          Float?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
 }
 
 model News {

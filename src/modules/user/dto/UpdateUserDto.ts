@@ -1,12 +1,19 @@
 import { UserRole } from '@prisma/client';
-import { IsEmail, IsEnum, IsOptional, IsPhoneNumber } from 'class-validator';
+import {
+  IsEmail,
+  IsEnum,
+  IsOptional,
+  IsPhoneNumber,
+  IsString,
+} from 'class-validator';
 
 export class UpdateUserDto {
   @IsOptional()
+  @IsString({ message: 'Tên phải là chuỗi' })
   name?: string;
 
   @IsOptional()
-  @IsEmail()
+  @IsEmail({}, { message: 'Email không hợp lệ' })
   email?: string;
 
   @IsOptional()
@@ -18,5 +25,10 @@ export class UpdateUserDto {
   role?: UserRole;
 
   @IsOptional()
-  avatar?: string;
+  @IsString()
+  avatarUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  avatarPublicId?: string;
 }

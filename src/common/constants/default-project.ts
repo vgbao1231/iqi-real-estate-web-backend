@@ -184,8 +184,11 @@ export const DEFAULT_PROJECT = {
     },
     invitation: {
       invitationImage: null,
-      position: { x: 52, y: 14 },
-      fontSize: 20,
+      fields: [
+        { id: 'name', position: { x: 52, y: 14 }, size: 20 },
+        { id: 'image', position: { x: 52, y: 14 }, size: 100 },
+        { id: 'phone', position: { x: 52, y: 14 }, size: 20 },
+      ],
     },
     breakImages: [],
   },

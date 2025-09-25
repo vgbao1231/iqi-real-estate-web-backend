@@ -9,9 +9,21 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { Project } from '@prisma/client';
 import { User } from 'src/common/decorators/user.decorator';
-import { ProjectsService } from './projects.service';
+import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
+import { ProjectsService } from './project.service';
+
+type TabKey = keyof Omit<
+  Project,
+  | 'id'
+  | 'createdAt'
+  | 'updatedAt'
+  | 'createdBy'
+  | 'updatedBy'
+  | 'creator'
+  | 'updater'
+>;
 
 @Controller('projects')
 export class ProjectsController {
@@ -26,6 +38,11 @@ export class ProjectsController {
   @Get('public/:id')
   findOnePublic(@Param('id') id: string) {
     return this.projectsService.findOne(id, { visibleOnWeb: true });
+  }
+
+  @Get('public/:id/:tab')
+  getTabById(@Param('id') id: string, @Param('tab') tab: TabKey) {
+    return this.projectsService.getTabById(id, tab);
   }
 
   // Admin

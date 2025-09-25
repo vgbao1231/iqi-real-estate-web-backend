@@ -19,8 +19,8 @@ async function main() {
       password: hashedPassword,
       role: 'ADMIN',
       isActive: true,
-      avatar: null,
-      phone: null,
+      avatarUrl: null,
+      phone: '0911095800',
     },
   });
 

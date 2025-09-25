@@ -1,0 +1,23 @@
+export enum ErrorCode {
+  // --- NOT FOUND ---
+  NOT_FOUND = 'NOT_FOUND',
+
+  // --- BAD REQUEST ---
+  BAD_REQUEST = 'BAD_REQUEST',
+
+  // --- AUTH ---
+  UNAUTHORIZED = 'UNAUTHORIZED',
+  FORBIDDEN = 'FORBIDDEN',
+
+  // --- RELATION / CONSTRAINT ---
+  RELATION_CONFLICT = 'RELATION_CONFLICT', // Vi phạm FK
+  UNIQUE_CONSTRAINT = 'UNIQUE_CONSTRAINT', // Trùng dữ liệu unique
+  REQUIRED_CONSTRAINT = 'REQUIRED_CONSTRAINT', // Thiếu dữ liệu bắt buộc (Prisma validation)
+
+  // --- VALIDATION ---
+  VALIDATION_ERROR = 'VALIDATION_ERROR',
+
+  // --- SERVER ---
+  INTERNAL_ERROR = 'INTERNAL_ERROR',
+  DATABASE_ERROR = 'DATABASE_ERROR',
+}
