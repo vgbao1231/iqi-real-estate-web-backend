@@ -10,7 +10,7 @@ RUN npm run build
 
 
 # ----------------------------------------------------------------------------------
-# ---- Stage 2: Production (Đã sửa) ----
+# ---- Stage 2: Production ----
 # ----------------------------------------------------------------------------------
 FROM node:20-alpine
 
@@ -33,6 +33,14 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 # Prisma Client cần file này để biết cấu hình của nó
 COPY --from=builder /app/prisma ./prisma
 
-RUN npx prisma db push --force && npm run seed 
-# Lệnh để khởi động ứng dụng
-CMD ["node", "dist/src/main.js"]
+# ----------------- CÁC THAY ĐỔI TẠI ĐÂY -----------------
+# THAY THẾ lệnh RUN cũ (chạy db push/seed)
+# bằng cách COPY file start.sh vào container
+COPY start.sh .
+
+# Cấp quyền thực thi cho file start.sh
+RUN chmod +x start.sh
+
+# THAY THẾ lệnh CMD cũ (chạy node)
+# bằng lệnh chạy script start.sh
+CMD ["./start.sh"]
