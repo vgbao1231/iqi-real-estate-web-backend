@@ -1,7 +1,6 @@
 import { UserRole } from '@prisma/client';
 import {
   IsEmail,
-  IsEnum,
   IsOptional,
   IsPhoneNumber,
   IsString,
@@ -23,7 +22,6 @@ export class CreateUserDto {
   @IsPhoneNumber('VN', { message: 'Số điện thoại không hợp lệ' })
   phone?: string;
 
-  @IsEnum(UserRole, { message: 'Role không hợp lệ' })
   role?: UserRole;
 
   @IsOptional()

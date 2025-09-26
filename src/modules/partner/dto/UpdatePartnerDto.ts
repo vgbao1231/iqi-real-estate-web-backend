@@ -1,5 +1,5 @@
 import { PartnerCategory } from '@prisma/client';
-import { IsEnum, IsNumber, IsOptional, IsString, IsUrl } from 'class-validator';
+import { IsNumber, IsOptional, IsString, IsUrl } from 'class-validator';
 
 export class UpdatePartnerDto {
   @IsOptional()
@@ -7,7 +7,6 @@ export class UpdatePartnerDto {
   name?: string;
 
   @IsOptional()
-  @IsEnum(PartnerCategory, { message: 'category không hợp lệ' })
   category?: PartnerCategory;
 
   @IsOptional()
