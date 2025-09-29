@@ -4,10 +4,16 @@ import cookieParser from 'cookie-parser';
 import 'tsconfig-paths/register';
 import { AppModule } from './app.module';
 
+const allowedOrigins = [
+  'https://iqi-real-estate-web.vercel.app', // Frontend chính (Production Vercel)
+  'http://localhost:3000', // Môi trường local development (ví dụ: React chạy ở cổng 3000)
+  // More....
+];
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
-    origin: 'http://localhost:3000', // hoặc '*' để cho tất cả domain
+    origin: allowedOrigins, // hoặc '*' để cho tất cả domain
     credentials: true, // cho phép gửi cookie (refresh token)
   });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
