@@ -14,6 +14,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
     origin: allowedOrigins, // hoặc '*' để cho tất cả domain
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: 'Content-Type, Accept, Authorization',
     credentials: true, // cho phép gửi cookie (refresh token)
   });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));

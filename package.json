@@ -12,7 +12,7 @@
     "start": "nest start",
     "start:dev": "nodemon --legacy-watch --exec ts-node src/main.ts",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
+    "start:prod": "dist/src/main",
     "reset-db": "docker exec iqi-mysql mysql -uroot -p123123 -e \"DROP DATABASE IF EXISTS iqi_db; CREATE DATABASE iqi_db;\" && docker exec -it iqi-api sh -c \"npx prisma db push && npx prisma db seed\"",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
