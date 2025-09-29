@@ -5,7 +5,17 @@ import { randomUUID } from 'crypto';
 const prisma = new PrismaClient();
 
 async function main() {
-  await prisma.project.deleteMany({});
+  try {
+    // Các lệnh xóa dữ liệu cũ
+    await prisma.project.deleteMany({});
+    await prisma.user.deleteMany({});
+    console.log('Cleared old data successfully or tables were empty.');
+  } catch {
+    // Bỏ qua lỗi P2021 (table does not exist) và tiếp tục tạo dữ liệu mới.
+    console.warn(
+      'WARN: Tables did not exist (P2021). Continuing with data creation...',
+    );
+  }
   const id = randomUUID();
   const projectId = randomUUID();
   const hashedPassword = await bcrypt.hash('123123', 10);
