@@ -27,4 +27,4 @@ COPY --from=builder /app/prisma ./prisma
 # ----------------- THAY ĐỔI CẦN THIẾT -----------------
 
 # SỬ DỤNG SHELL FORM: Chạy các lệnh DB, sau đó khởi động ứng dụng.
-CMD sh -c "npx prisma db push --accept-data-loss && npm run seed && npm run start:prod"
+CMD npx prisma migrate deploy && npm run start:prod
