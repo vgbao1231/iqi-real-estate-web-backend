@@ -27,5 +27,5 @@ COPY --from=builder /app/prisma ./prisma
 # ----------------- THAY ĐỔI CẦN THIẾT -----------------
 
 # SỬ DỤNG SHELL FORM: Chạy các lệnh DB, sau đó khởi động ứng dụng.
-# Tất cả đều nằm trong môi trường Runtime, nơi đã có biến DATABASE_URL.
+# Tất cả đều nằm trong môi trường Runtime, nơi đã có biến MYSQL_URL.
 CMD npx prisma migrate deploy && node dist/src/main.js
