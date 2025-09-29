@@ -25,4 +25,6 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/prisma ./prisma
 
 # ----------------- THAY ĐỔI CẦN THIẾT -----------------
-CMD [ "npx prisma db push && npx prisma db seed && npm run start:prod" ]
+
+# SỬ DỤNG SHELL FORM: Chạy các lệnh DB, sau đó khởi động ứng dụng.
+CMD npx prisma db push --accept-data-loss && npm run seed && node dist/src/main.js
