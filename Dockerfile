@@ -28,4 +28,4 @@ COPY --from=builder /app/prisma ./prisma
 
 # SỬ DỤNG SHELL FORM: Chạy các lệnh DB, sau đó khởi động ứng dụng.
 # Tất cả đều nằm trong môi trường Runtime, nơi đã có biến DATABASE_URL.
-CMD npx prisma db push --accept-data-loss && npm run seed && node dist/src/main.js
+CMD npx prisma migrate deploy && node dist/src/main.js
