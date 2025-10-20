@@ -6,10 +6,12 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CreatePartnerDto } from './dto/CreatePartnerDto';
 import { UpdatePartnerDto } from './dto/UpdatePartnerDto';
 import { PartnerService } from './partner.service';
 
@@ -28,17 +30,20 @@ export class PartnerController {
   }
 
   @Post()
-  async create(@Body() body: Prisma.PartnerCreateInput) {
+  @UseGuards(JwtAuthGuard)
+  async create(@Body() body: CreatePartnerDto) {
     return this.partnerService.create(body);
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
   @UsePipes(new ValidationPipe({ whitelist: true }))
   update(@Param('id') id: string, @Body() dto: UpdatePartnerDto) {
     return this.partnerService.update(id, dto);
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
   async delete(@Param('id') id: string) {
     return this.partnerService.delete(id);
   }

@@ -4,4 +4,5 @@ export enum Entity {
   NEWS = 'News',
   PARTNER = 'Partner',
   ARTICLE = 'Article',
+  CONTACT = 'Contact',
 }

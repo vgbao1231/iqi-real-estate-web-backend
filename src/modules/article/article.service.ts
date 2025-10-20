@@ -1,13 +1,14 @@
 // article/article.service.ts
 
 import { Injectable } from '@nestjs/common';
+import { Article, Prisma } from '@prisma/client';
 import { Entity } from 'src/common/enums/entity';
 import { AppError } from 'src/common/exceptions/app-error';
 import { handlePrismaError } from 'src/common/utils/prisma-error.handler';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateArticleDto } from './dto/CreateArticleDto';
-import { UpdateArticleDto } from './dto/UpdateUserDto';
+import { UpdateArticleDto } from './dto/UpdateArticleDto';
 
 @Injectable()
 export class ArticleService {
@@ -16,72 +17,133 @@ export class ArticleService {
     private cloudinaryService: CloudinaryService,
   ) {}
 
-  private async connectTags(tagNames: string[] | undefined) {
-    if (!tagNames || tagNames.length === 0) return undefined;
-
-    const tagConnects = await Promise.all(
-      tagNames.map(async (name: string) => {
-        const tag = await this.prisma.tag.upsert({
-          where: { name },
-          update: {},
-          create: { name },
-        });
-        return { tagId: tag.id };
-      }),
-    );
-    return {
-      createMany: {
-        data: tagConnects.map((t) => ({ tagId: t.tagId })),
-        skipDuplicates: true,
-      },
-    };
-  }
-
-  async findAll() {
+  async findAll(options: object = {}) {
     try {
-      const articles = await this.prisma.article.findMany({
+      return await this.prisma.article.findMany({
         orderBy: { createdAt: 'desc' },
-        include: { tags: { include: { tag: true } } },
+        where: options,
       });
-      return { data: articles };
     } catch (error) {
       handlePrismaError(error, Entity.ARTICLE);
     }
   }
 
-  // --- FIND ONE ---
-  async findOne(id: string) {
+  // async getfeaturedProjects() {
+  //   try {
+  //     const featuredProjects = await this.prisma.project.findMany({
+  //       where: {
+  //         isFeatured: true,
+  //         visibleOnWeb: true,
+  //       },
+  //       take: 3,
+  //       orderBy: {
+  //         createdAt: 'desc',
+  //       },
+  //       select: {
+  //         id: true,
+  //         overview: true,
+  //       },
+  //     });
+
+  //     return featuredProjects;
+  //   } catch (error) {
+  //     handlePrismaError(error, Entity.PROJECT);
+  //   }
+  // }
+
+  async findOne(id: string, options: object = {}) {
     try {
-      // Tăng view count và trả về bài viết
       const article = await this.prisma.article.update({
-        where: { id },
+        where: { id, ...options },
         data: { views: { increment: 1 } },
-        include: { tags: { include: { tag: true } } },
+        include: {
+          creator: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
       });
 
       if (!article) {
         throw AppError.NotFound(Entity.ARTICLE);
       }
 
-      return { data: article };
+      return article;
     } catch (error) {
       handlePrismaError(error, Entity.ARTICLE);
     }
   }
 
-  // --- CREATE ---
-  async create(userId: string, data: CreateArticleDto) {
-    const { tagNames, ...articleData } = data;
+  async getRelatedArticles(article: Article) {
     try {
-      const articleTags = await this.connectTags(tagNames);
+      const tags = article.tags as string[] | null;
 
+      const tagQueries =
+        tags && tags.length > 0
+          ? tags.slice(0, 3).map((tag) => ({
+              tags: {
+                path: '$[*]',
+                array_contains: tag,
+              },
+            }))
+          : [];
+      const conditions: Prisma.ArticleWhereInput[] = [];
+
+      if (tagQueries.length > 0) {
+        // NHÓM A (Ưu tiên Cao): CÙNG CATEGORY + CHUNG TAGS
+        conditions.push({
+          AND: [{ category: article.category }, { OR: tagQueries }],
+        });
+
+        // NHÓM B (Ưu tiên Thấp): KHÁC CATEGORY + CHUNG TAGS
+        conditions.push({
+          AND: [{ category: { not: article.category } }, { OR: tagQueries }],
+        });
+      }
+
+      if (conditions.length === 0) {
+        conditions.push({ category: article.category });
+      }
+
+      const whereConditions: Prisma.ArticleWhereInput = {
+        AND: [
+          { id: { not: article.id } }, // Loại trừ chính mình
+          { isPublished: true }, // Chỉ lấy bài đã xuất bản
+          { OR: conditions }, // Kết hợp các nhóm điều kiện ưu tiên
+        ],
+      };
+      const relatedArticles = await this.prisma.article.findMany({
+        where: whereConditions,
+        take: 3,
+        orderBy: {
+          views: 'desc',
+        },
+        select: {
+          id: true,
+          category: true,
+          type: true,
+          title: true,
+          image: true,
+          createdAt: true,
+        },
+      });
+
+      return relatedArticles;
+    } catch (error) {
+      handlePrismaError(error, Entity.PROJECT);
+    }
+  }
+
+  async create(userId: string, data: CreateArticleDto) {
+    try {
       const article = await this.prisma.article.create({
         data: {
-          ...articleData,
+          ...data,
           createdBy: userId,
-          tags: articleTags,
         },
-        include: { tags: { include: { tag: true } } },
       });
 
       return {
@@ -89,30 +151,37 @@ export class ArticleService {
         data: article,
       };
     } catch (error) {
+      if (data.image?.publicId) {
+        try {
+          await this.cloudinaryService.deleteFile(data.image?.publicId);
+          console.log('Đã xoá ảnh dư khi create fail:', data.image?.publicId);
+        } catch (err) {
+          console.error('Cleanup ảnh dư khi create fail:', err);
+        }
+      }
       handlePrismaError(error, Entity.ARTICLE);
     }
   }
 
   async update(userId: string, id: string, data: UpdateArticleDto) {
-    const { tagNames, ...articleData } = data;
     try {
-      const existingArticle = await this.prisma.article.findUnique({
+      // 1. Lấy Image Public ID cũ (Từ trường 'image' kiểu Json)
+      const exist = await this.prisma.article.findUnique({
         where: { id },
         select: {
-          imagePublicId: true,
+          image: true,
         },
       });
 
-      if (!existingArticle) {
+      if (!exist) {
         throw AppError.NotFound(Entity.ARTICLE);
       }
 
-      const newPublicId = articleData.imagePublicId;
-      const oldPublicId = existingArticle.imagePublicId;
+      const oldPublicId = (exist.image as { publicId: string })?.publicId;
+      const newPublicId = data.image?.publicId;
 
-      // 1. Logic XÓA ẢNH CŨ TRÊN CLOUDINARY
+      // 2. Logic XÓA ẢNH CŨ TRÊN CLOUDINARY
       if (oldPublicId) {
-        // Xóa nếu: 1) Không có Public ID mới (yêu cầu xóa ảnh) HOẶC 2) ID mới khác ID cũ
         const shouldDeleteOldImage =
           !newPublicId || newPublicId !== oldPublicId;
 
@@ -125,20 +194,13 @@ export class ArticleService {
         }
       }
 
-      // Xử lý Tags
-      const tagUpdate = tagNames
-        ? { deleteMany: {}, ...(await this.connectTags(tagNames)) }
-        : undefined;
-
-      // 2. Update bài viết trong DB
+      // 3. Update bài viết trong DB
       const article = await this.prisma.article.update({
         where: { id },
         data: {
-          ...articleData,
+          ...data,
           updatedBy: userId,
-          tags: tagUpdate,
         },
-        include: { tags: { include: { tag: true } } },
       });
 
       return {
@@ -146,20 +208,28 @@ export class ArticleService {
         data: article,
       };
     } catch (error) {
+      if (data.image?.publicId) {
+        try {
+          await this.cloudinaryService.deleteFile(data.image?.publicId);
+          console.log('Đã xoá ảnh dư khi update fail:', data.image?.publicId);
+        } catch (err) {
+          console.error('Cleanup ảnh dư khi update fail:', err);
+        }
+      }
       handlePrismaError(error, Entity.ARTICLE);
     }
   }
 
-  async remove(id: string) {
+  async delete(id: string) {
     try {
-      const existingArticle = await this.prisma.article.findUnique({
+      const exist = await this.prisma.article.findUnique({
         where: { id },
         select: {
-          imagePublicId: true,
+          image: true,
         },
       });
 
-      if (!existingArticle) {
+      if (!exist) {
         throw AppError.NotFound(Entity.ARTICLE);
       }
 
@@ -169,10 +239,10 @@ export class ArticleService {
       });
 
       // 2. Xóa ảnh trên Cloudinary
-      if (existingArticle.imagePublicId) {
+      if ((exist.image as { publicId: string }).publicId) {
         try {
           await this.cloudinaryService.deleteFile(
-            existingArticle.imagePublicId,
+            (exist.image as { publicId: string }).publicId,
           );
         } catch (cloudErr) {
           console.error('Lỗi xóa ảnh trên Cloudinary:', cloudErr);

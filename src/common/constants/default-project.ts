@@ -33,9 +33,22 @@ export const DEFAULT_PROJECT = {
       {
         id: 'category',
         key: 'Danh mục',
-        value: '',
+        value: 'residential',
         type: 'select',
-        options: ['Nhà ở', 'Quốc tế', 'Nghỉ dưỡng'],
+        options: [
+          {
+            value: 'residential',
+            label: 'Nhà ở',
+          },
+          {
+            value: 'international',
+            label: 'Quốc tế',
+          },
+          {
+            value: 'resort',
+            label: 'Nghỉ dưỡng',
+          },
+        ],
         hidden: true,
       },
       {
@@ -47,18 +60,45 @@ export const DEFAULT_PROJECT = {
       {
         id: 'project_type',
         key: 'Loại hình',
-        value: '',
+        value: 'apartment',
         type: 'select',
         options: [
-          'Căn hộ',
-          'Biệt thự',
-          'Nhà phố',
-          'Resort',
-          'Condotel',
-          'Villa biển',
-          'Văn phòng cho thuê',
-          'Co-working space',
-          'Khu đô thị sinh thái',
+          {
+            value: 'apartment',
+            label: 'Căn hộ',
+          },
+          {
+            value: 'villa',
+            label: 'Biệt thự',
+          },
+          {
+            value: 'townhouse',
+            label: 'Nhà phố',
+          },
+          {
+            value: 'resort',
+            label: 'Resort',
+          },
+          {
+            value: 'condotel',
+            label: 'Condotel',
+          },
+          {
+            value: 'beach_villa',
+            label: 'Villa biển',
+          },
+          {
+            value: 'office_for_lease',
+            label: 'Văn phòng cho thuê',
+          },
+          {
+            value: 'co_working_space',
+            label: 'Co-working space',
+          },
+          {
+            value: 'ecological_urban_area',
+            label: 'Khu đô thị sinh thái',
+          },
         ],
       },
       {
@@ -90,16 +130,38 @@ export const DEFAULT_PROJECT = {
       {
         id: 'currency_unit',
         key: 'Đơn vị tiền tệ',
-        value: 'VND',
+        value: 'vnd',
         type: 'select',
-        options: ['VND', 'USD', 'EUR'],
+        options: [
+          {
+            value: 'vnd',
+            label: 'VND',
+          },
+          {
+            value: 'usd',
+            label: 'USD',
+          },
+          {
+            value: 'eur',
+            label: 'EUR',
+          },
+        ],
       },
       {
         id: 'measurement_unit',
         key: 'Đơn vị đo lường',
         value: 'sqrt',
         type: 'select',
-        options: ['sqm', 'sqrt'],
+        options: [
+          {
+            value: 'sqm',
+            label: 'sqm',
+          },
+          {
+            value: 'sqrt',
+            label: 'sqrt',
+          },
+        ],
       },
       {
         id: 'architectural_designer',
@@ -121,14 +183,29 @@ export const DEFAULT_PROJECT = {
       {
         id: 'status',
         key: 'Trạng thái',
-        value: '',
+        value: 'launching',
         type: 'select',
         options: [
-          'Đang lên kế hoạch',
-          'Đang xây dựng',
-          'Đang bán',
-          'Đang mở bán',
-          'Hoàn thành',
+          {
+            value: 'planning',
+            label: 'Đang lên kế hoạch',
+          },
+          {
+            value: 'under_construction',
+            label: 'Đang xây dựng',
+          },
+          {
+            value: 'selling',
+            label: 'Đang bán',
+          },
+          {
+            value: 'launching',
+            label: 'Đang mở bán',
+          },
+          {
+            value: 'completed',
+            label: 'Hoàn thành',
+          },
         ],
       },
       { id: 'slug', key: 'Slug', value: '', type: 'text', hidden: true },
@@ -184,11 +261,7 @@ export const DEFAULT_PROJECT = {
     },
     invitation: {
       invitationImage: null,
-      fields: [
-        { id: 'name', position: { x: 52, y: 14 }, size: 20 },
-        { id: 'image', position: { x: 52, y: 14 }, size: 100 },
-        { id: 'phone', position: { x: 52, y: 14 }, size: 20 },
-      ],
+      fields: [],
     },
     breakImages: [],
   },

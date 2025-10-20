@@ -3,7 +3,7 @@ import { Request } from 'express';
 
 // This should match the user object from your auth strategy
 interface UserPayload {
-  id: number;
+  id: string;
   username: string;
   role: string;
 }

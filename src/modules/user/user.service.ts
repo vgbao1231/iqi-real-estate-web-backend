@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { Entity } from 'src/common/enums/entity';
-import { ErrorCode } from 'src/common/enums/error-code';
 import { AppError } from 'src/common/exceptions/app-error';
 import { handlePrismaError } from 'src/common/utils/prisma-error.handler';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
@@ -17,39 +15,18 @@ export class UsersService {
     private cloudinaryService: CloudinaryService,
   ) {}
 
-  findAll() {
+  async findAll() {
     return this.prisma.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        isActive: true,
-        avatarUrl: true,
-        avatarPublicId: true,
-        phone: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
-  findOne(id: string) {
-    return this.prisma.user.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        isActive: true,
-        avatarUrl: true,
-        avatarPublicId: true,
-        phone: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+  async findOne(id: string) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      throw AppError.NotFound(Entity.USER);
+    }
+    return user;
   }
 
   async create(data: CreateUserDto) {
@@ -61,18 +38,6 @@ export class UsersService {
           ...data,
           password: hashedPassword,
         },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          role: true,
-          isActive: true,
-          avatarUrl: true,
-          avatarPublicId: true,
-          phone: true,
-          createdAt: true,
-          updatedAt: true,
-        },
       });
 
       return {
@@ -83,15 +48,14 @@ export class UsersService {
       console.error('Create user error:', error);
 
       // Nếu create fail mà có avatar mới → cleanup ảnh dư
-      if (data.avatarPublicId) {
+      if (data.image?.publicId) {
         try {
-          await this.cloudinaryService.deleteFile(data.avatarPublicId);
-          console.log('Đã xoá ảnh dư khi create fail:', data.avatarPublicId);
+          await this.cloudinaryService.deleteFile(data.image?.publicId);
+          console.log('Đã xoá ảnh dư khi create fail:', data.image?.publicId);
         } catch (err) {
           console.error('Cleanup ảnh dư khi create fail:', err);
         }
       }
-
       handlePrismaError(error, Entity.USER);
     }
   }
@@ -99,28 +63,31 @@ export class UsersService {
   async update(id: string, data: UpdateUserDto) {
     try {
       // 1. Lấy user hiện tại để kiểm tra avatar cũ
-      const existingUser = await this.prisma.user.findUnique({
+      const exist = await this.prisma.user.findUnique({
         where: { id },
         select: {
-          avatarPublicId: true,
+          image: true,
         },
       });
 
-      if (!existingUser) {
+      if (!exist) {
         throw AppError.NotFound(Entity.USER);
       }
 
-      // 2. Nếu có avatar mới, xóa ảnh cũ
-      if (
-        data.avatarPublicId &&
-        existingUser.avatarPublicId &&
-        data.avatarPublicId !== existingUser.avatarPublicId
-      ) {
-        try {
-          await this.cloudinaryService.deleteFile(existingUser.avatarPublicId);
-        } catch (cloudErr) {
-          console.error('Lỗi xóa ảnh cũ trên Cloudinary:', cloudErr);
-          // Không throw ở đây để tránh fail toàn bộ update user
+      const oldPublicId = (exist.image as { publicId: string })?.publicId;
+      const newPublicId = data.image?.publicId;
+
+      // 2. Logic XÓA ẢNH CŨ TRÊN CLOUDINARY
+      if (oldPublicId) {
+        const shouldDeleteOldImage =
+          !newPublicId || newPublicId !== oldPublicId;
+
+        if (shouldDeleteOldImage) {
+          try {
+            await this.cloudinaryService.deleteFile(oldPublicId);
+          } catch (cloudErr) {
+            console.error('Lỗi xóa ảnh cũ trên Cloudinary:', cloudErr);
+          }
         }
       }
 
@@ -128,18 +95,6 @@ export class UsersService {
       const user = await this.prisma.user.update({
         where: { id },
         data,
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          role: true,
-          isActive: true,
-          avatarUrl: true,
-          avatarPublicId: true,
-          phone: true,
-          createdAt: true,
-          updatedAt: true,
-        },
       });
 
       return {
@@ -150,57 +105,44 @@ export class UsersService {
       console.error('Prisma Update User Error:', error);
 
       // Nếu update fail mà có avatar mới → cleanup ảnh dư
-      if (data.avatarPublicId) {
+      if (data.image?.publicId) {
         try {
-          await this.cloudinaryService.deleteFile(data.avatarPublicId);
-          console.log('Đã xoá ảnh dư khi update fail:', data.avatarPublicId);
+          await this.cloudinaryService.deleteFile(data.image?.publicId);
+          console.log('Đã xoá ảnh dư khi update fail:', data.image?.publicId);
         } catch (err) {
           console.error('Cleanup ảnh dư khi update fail:', err);
         }
       }
-
       handlePrismaError(error, Entity.USER);
     }
   }
 
   async delete(id: string) {
     try {
-      // 1. Lấy user trước khi xóa để có avatarPublicId
-      const existingUser = await this.prisma.user.findUnique({
+      const exist = await this.prisma.user.findUnique({
         where: { id },
         select: {
-          avatarPublicId: true,
+          image: true,
         },
       });
 
-      if (!existingUser) {
+      if (!exist) {
         throw AppError.NotFound(Entity.USER);
       }
 
-      // 2. Xóa user trong DB
+      // 1. Xóa user trong DB
       const user = await this.prisma.user.delete({
         where: { id },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          role: true,
-          isActive: true,
-          avatarUrl: true,
-          avatarPublicId: true,
-          phone: true,
-          createdAt: true,
-          updatedAt: true,
-        },
       });
 
-      // 3. Xóa ảnh cũ (nếu có)
-      if (existingUser.avatarPublicId) {
+      // 2. Xóa ảnh cũ (nếu có)
+      if ((exist.image as { publicId: string }).publicId) {
         try {
-          await this.cloudinaryService.deleteFile(existingUser.avatarPublicId);
+          await this.cloudinaryService.deleteFile(
+            (exist.image as { publicId: string }).publicId,
+          );
         } catch (cloudErr) {
-          console.error('Lỗi xóa ảnh cũ trên Cloudinary:', cloudErr);
-          // Không throw để tránh rollback user delete (vì user đã bị xóa khỏi DB)
+          console.error('Lỗi xóa ảnh trên Cloudinary:', cloudErr);
         }
       }
 
@@ -209,24 +151,7 @@ export class UsersService {
         data: user,
       };
     } catch (error) {
-      console.error('Prisma Delete User Error:', error);
-
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        switch (error.code) {
-          case 'P2003':
-            throw AppError.BadRequest(
-              'Không thể xóa người dùng vì đang có dữ liệu liên quan.',
-              ErrorCode.RELATION_CONFLICT,
-            );
-
-          case 'P2025':
-            throw AppError.NotFound(Entity.USER);
-        }
-      }
-
-      throw AppError.BadRequest(
-        error instanceof Error ? error.message : 'Không thể xóa người dùng.',
-      );
+      handlePrismaError(error, Entity.USER);
     }
   }
 }

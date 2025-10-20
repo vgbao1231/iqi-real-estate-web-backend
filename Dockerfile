@@ -24,7 +24,18 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/prisma ./prisma
 
-# ----------------- THAY ĐỔI CẦN THIẾT -----------------
-
 # SỬ DỤNG SHELL FORM: Chạy các lệnh DB, sau đó khởi động ứng dụng.
 CMD npx prisma migrate deploy && npm run start:prod
+
+# ----------------------------------------------------------------------------------
+# ---- Stage 3: Development (Chạy Nodemon) ----
+# ----------------------------------------------------------------------------------
+FROM node:20-alpine AS development
+WORKDIR /app
+# 1. Copy TẤT CẢ node_modules từ Stage 1 (bao gồm nodemon)
+COPY --from=builder /app/node_modules ./node_modules
+# 2. Copy source code (chưa build)
+COPY . .
+
+# Chỉ định lệnh chạy phát triển (sử dụng nodemon)
+CMD npm run start:dev

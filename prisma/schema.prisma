@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -15,46 +15,19 @@ enum UserRole {
 }
 
 model User {
-  id             String   @id @default(uuid())
-  name           String
-  email          String   @unique
-  password       String
-  role           UserRole @default(ADMIN)
-  isActive       Boolean  @default(true)
-  avatarUrl      String?
-  avatarPublicId String?
-  phone          String?  @unique
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      UserRole @default(ADMIN)
+  isActive  Boolean  @default(true)
+  image     Json?
+  phone     String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  createdProjects Project[] @relation("ProjectsCreated")
-  updatedProjects Project[] @relation("ProjectsUpdated")
-}
-
-model Project {
-  id           String   @id @default(uuid())
-  isFeatured   Boolean  @default(false)
-  isExclusive  Boolean  @default(false)
-  visibleOnWeb Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  createdBy    String
-  updatedBy    String?
-
-  // Các tab
-  introduction Json?
-  overview     Json?
-  location     Json?
-  siteplan     Json?
-  production   Json?
-  amenity      Json?
-  timeline     Json?
-  contact      Json?
-  other        Json?
-
-  // Quan hệ với User
-  creator User  @relation("ProjectsCreated", fields: [createdBy], references: [id])
-  updater User? @relation("ProjectsUpdated", fields: [updatedBy], references: [id])
+  createdArticle Article[] @relation("ArticleCreated")
+  updatedArticle Article[] @relation("ArticleUpdated")
 }
 
 enum PartnerCategory {
@@ -75,16 +48,16 @@ model Partner {
   partnershipYear  Int?
   specialties      Json?
   achievements     Json?
-  logoUrl          String?
-  logoPublicId     String?
-  loanRate         Float?
-  maxLoan          Float?
-  revenue          Float?
+  benefits         Json?
+  image            Json?
+  loanRate         String?
+  maxLoan          String?
+  revenue          String?
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
 }
 
-enum Category {
+enum ArticleCategory {
   MARKET
   LAW
   INVESTMENT
@@ -92,38 +65,47 @@ enum Category {
   BANK
 }
 
+enum ArticleType {
+  MACRO
+  MICRO
+}
+
 model Article {
-  id            String  @id @default(cuid())
-  title         String
-  description   String?
-  content       String?
-  category      String
-  readTime      String?
-  views         Int     @default(0)
-  imageUrl      String?
-  imagePublicId String?
-  isFeatured    Boolean @default(false)
+  id          String          @id @default(cuid())
+  title       String
+  description String?
+  type        ArticleType     @default(MACRO)
+  content     String?
+  category    ArticleCategory @default(MARKET)
+  readTime    String?
+  views       Int             @default(0)
+  image       Json?
+  isFeatured  Boolean         @default(false)
+  isPublished Boolean         @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   createdBy String
   updatedBy String?
 
-  tags ArticleTag[]
+  tags Json?
+
+  // Quan hệ với User
+  creator User  @relation("ArticleCreated", fields: [createdBy], references: [id])
+  updater User? @relation("ArticleUpdated", fields: [updatedBy], references: [id])
 }
 
-model Tag {
-  id       String       @id @default(cuid())
-  name     String       @unique
-  articles ArticleTag[]
-}
+model Contact {
+  id String @id @default(uuid())
 
-model ArticleTag {
-  articleId String
-  tagId     String
+  mainHotline  String
+  mainEmail    String
+  website      String
+  mainAddress  String
+  workingHours String?
 
-  article Article @relation(fields: [articleId], references: [id])
-  tag     Tag     @relation(fields: [tagId], references: [id])
+  socialMedia Json?
 
-  @@id([articleId, tagId])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

@@ -7,6 +7,7 @@ export function handlePrismaError(
   error: unknown,
   entity: Entity = Entity.USER,
 ) {
+  console.error(error);
   // ❌ Lỗi request đã biết (KnownRequestError)
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     switch (error.code) {
@@ -42,7 +43,7 @@ export function handlePrismaError(
       // Foreign key constraint failed (quan hệ còn dữ liệu liên quan)
       case 'P2003':
         throw AppError.BadRequest(
-          `Không thể xóa ${entity} vì đang có dữ liệu liên quan.`,
+          `Thao tác thất bại do vi phạm ràng buộc dữ liệu liên quan`,
           ErrorCode.RELATION_CONFLICT,
         );
 

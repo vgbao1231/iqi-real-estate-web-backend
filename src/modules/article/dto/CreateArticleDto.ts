@@ -1,15 +1,8 @@
-import { Category } from '@prisma/client';
-import {
-  IsArray,
-  IsBoolean,
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { ArticleCategory, ArticleType } from '@prisma/client';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateArticleDto {
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Tiêu đề không được để trống' })
   @IsString()
   title: string;
 
@@ -21,28 +14,27 @@ export class CreateArticleDto {
   @IsString()
   content?: string;
 
-  @IsNotEmpty()
-  @IsEnum(Category)
-  category: Category;
+  @IsNotEmpty({ message: 'Loại bài viết không được để trống' })
+  type: ArticleType;
+
+  @IsNotEmpty({ message: 'Danh mục không được để trống' })
+  category: ArticleCategory;
 
   @IsOptional()
   @IsString()
   readTime?: string;
 
   @IsOptional()
-  @IsString()
-  imageUrl?: string | null; // SỬA: imageUrl (chấp nhận null)
-
-  @IsOptional()
-  @IsString()
-  imagePublicId?: string | null; // SỬA: imagePublicId (chấp nhận null)
-
-  @IsOptional()
   @IsBoolean()
   isFeatured?: boolean;
 
   @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  tagNames?: string[];
+  @IsBoolean()
+  isPublished?: boolean;
+
+  @IsOptional()
+  image?: { url: string; publicId: string };
+
+  @IsOptional()
+  tags?: any;
 }
