@@ -88,7 +88,7 @@ model Article {
   createdBy String
   updatedBy String?
 
-  tags Json?
+  tags String[]
 
   // Quan hệ với User
   creator User  @relation("ArticleCreated", fields: [createdBy], references: [id])

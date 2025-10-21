@@ -28,29 +28,6 @@ export class ArticleService {
     }
   }
 
-  // async getfeaturedProjects() {
-  //   try {
-  //     const featuredProjects = await this.prisma.project.findMany({
-  //       where: {
-  //         isFeatured: true,
-  //         visibleOnWeb: true,
-  //       },
-  //       take: 3,
-  //       orderBy: {
-  //         createdAt: 'desc',
-  //       },
-  //       select: {
-  //         id: true,
-  //         overview: true,
-  //       },
-  //     });
-
-  //     return featuredProjects;
-  //   } catch (error) {
-  //     handlePrismaError(error, Entity.PROJECT);
-  //   }
-  // }
-
   async findOne(id: string, options: object = {}) {
     try {
       const article = await this.prisma.article.update({
@@ -85,8 +62,7 @@ export class ArticleService {
         tags && tags.length > 0
           ? tags.slice(0, 3).map((tag) => ({
               tags: {
-                path: '$[*]',
-                array_contains: tag,
+                has: tag,
               },
             }))
           : [];

@@ -1,5 +1,4 @@
 import { Prisma, PrismaClient } from '@prisma/client';
-import * as bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
 
 const prisma = new PrismaClient();
@@ -16,51 +15,32 @@ async function main() {
       'WARN: Tables did not exist (P2021). Continuing with data creation...',
     );
   }
-  const id = randomUUID();
-  // const projectId = randomUUID();
-  const hashedPassword = await bcrypt.hash('123123', 10);
 
-  const user = await prisma.user.upsert({
-    where: { email: 'admin@gmail.com' },
-    update: {},
-    create: {
-      id,
-      name: 'Admin',
-      email: 'admin@gmail.com',
-      password: hashedPassword,
-      role: 'ADMIN',
-      isActive: true,
-      phone: '0911095800',
-    },
+  const user = await prisma.user.createMany({
+    data: [
+      {
+        id: 'eb95b8ac-141f-4c36-a21a-486fcac2cb0f',
+        name: 'Admin',
+        email: 'admin@gmail.com',
+        password:
+          '$2b$10$MRs8isuTJDAHfCKaWhRB/uMyKA3HijGO.3MNivRLoU2UOW0M10bwa',
+        role: 'ADMIN',
+        isActive: true,
+        image: {
+          url: 'https://res.cloudinary.com/dpinnqt92/image/upload/v1761015909/IQI/users/yqokuxgl18qe3w7aef5g.jpg',
+          publicId: 'IQI/users/yqokuxgl18qe3w7aef5g',
+        },
+        phone: '0911095800',
+        createdAt: '2025-10-20T07:49:06.618Z',
+        updatedAt: '2025-10-21T03:05:10.564Z',
+      },
+    ],
   });
 
   const article = await prisma.article.createMany({
     data: [
       {
-        id: randomUUID(),
-        title: 'Thị trường BDS TP.HCM Q4/2025: Tăng trưởng ổn định 8.5%',
-        description:
-          'Thị trường bất động sản TP.HCM trong quý 4/2025 đã ghi nhận mức tăng trưởng 8.5% so với cùng kỳ năm trước, với phân khúc căn hộ cao cấp dẫn đầu xu hướng tăng giá.',
-        type: 'MACRO',
-        content:
-          '<p><strong style="font-size: 24px;">Phân khúc căn hộ cao cấp dẫn đầu</strong></p><p><span style="font-size: 16px;">Theo báo cáo từ Hiệp hội Bất động sản TP.HCM, phân khúc căn hộ cao cấp đã tăng trưởng 12% về giá bán, trong khi nhà phố và biệt thự tăng 6.2%. Điều này cho thấy sự phân hóa rõ rệt trong thị trường.</span></p><p><span style="font-size: 16px;">Các dự án tại khu vực trung tâm như Quận 1, Quận 3, và Quận 7 tiếp tục thu hút sự quan tâm của nhà đầu tư nhờ vào vị trí đắc địa và hạ tầng hoàn thiện.</span></p><p><br></p><p><strong style="font-size: 24px;">Nguồn cung mới tăng mạnh</strong></p><p><span style="font-size: 16px;">Quý 4/2025 chứng kiến sự gia tăng đáng kể về nguồn cung mới với 15 dự án được mở bán, tổng cộng hơn 8,000 căn hộ ra thị trường. Điều này giúp cân bằng cung cầu và ổn định giá cả.</span></p><p><span style="font-size: 16px;">Đặc biệt, các dự án tại khu Đông như Thủ Đức, Quận 9 đang trở thành tâm điểm với mức giá hợp lý và tiềm năng phát triển cao.</span></p><p><br></p><p><strong style="font-size: 24px;">Dự báo cho năm 2025</strong></p><p><span style="font-size: 16px;">Các chuyên gia dự báo thị trường BDS TP.HCM sẽ tiếp tục tăng trưởng ổn định trong năm 2025 với mức tăng khoảng 6-8%. Các yếu tố hỗ trợ bao gồm:</span></p><ol><li data-list="bullet"><span class="ql-ui" contenteditable="false"></span><span style="font-size: 16px;">Hạ tầng giao thông được cải thiện với các tuyến metro mới</span></li><li data-list="bullet"><span class="ql-ui" contenteditable="false"></span><span style="font-size: 16px;">Chính sách hỗ trợ người mua nhà lần đầu</span></li><li data-list="bullet"><span class="ql-ui" contenteditable="false"></span><span style="font-size: 16px;">Dòng vốn FDI tiếp tục đổ vào thị trường BDS</span></li><li data-list="bullet"><span class="ql-ui" contenteditable="false"></span><span style="font-size: 16px;">Nhu cầu ở thực tăng cao do dân số trẻ</span></li></ol><p><br></p>',
-        category: 'MARKET',
-        readTime: '',
-        views: 0,
-        image: {
-          url: 'https://res.cloudinary.com/dpinnqt92/image/upload/v1759398668/IQI/articles/bess4jhfqnamxprjefzf.webp',
-          publicId: 'IQI/articles/bess4jhfqnamxprjefzf',
-        },
-        isFeatured: true,
-        isPublished: true,
-        createdAt: '2025-10-02T09:50:44.076Z',
-        updatedAt: '2025-10-03T03:58:17.500Z',
-        createdBy: id,
-        updatedBy: null,
-        tags: ['Đầu tư', 'Căn hộ'],
-      },
-      {
-        id: randomUUID(),
+        id: '7aade4e9-eee9-4957-9e63-a91091a163ba',
         title: 'Thị trường BDS TP.HCM Q4/2025: Tăng trưởng ổn định 8.5%',
         description:
           'Thị trường bất động sản TP.HCM trong quý 4/2025 đã ghi nhận mức tăng trưởng 8.5% so với cùng kỳ năm trước, với phân khúc căn hộ cao cấp dẫn đầu xu hướng tăng giá.',
@@ -71,16 +51,39 @@ async function main() {
         readTime: '',
         views: 0,
         image: {
-          url: 'https://res.cloudinary.com/dpinnqt92/image/upload/v1759475615/IQI/articles/hkboc4uttuizogsq1liv.webp',
-          publicId: 'IQI/articles/hkboc4uttuizogsq1liv',
+          url: 'https://res.cloudinary.com/dpinnqt92/image/upload/v1761015823/IQI/articles/cwcwcaa3rocjrkqqs6kr.webp',
+          publicId: 'IQI/articles/cwcwcaa3rocjrkqqs6kr',
         },
         isFeatured: true,
         isPublished: true,
         createdAt: '2025-10-02T09:50:44.076Z',
-        updatedAt: '2025-10-03T03:58:17.500Z',
-        createdBy: id,
-        updatedBy: null,
+        updatedAt: '2025-10-21T03:03:44.473Z',
+        createdBy: 'eb95b8ac-141f-4c36-a21a-486fcac2cb0f',
+        updatedBy: 'eb95b8ac-141f-4c36-a21a-486fcac2cb0f',
         tags: ['Đầu tư', 'Căn hộ', 'Thị trường'],
+      },
+      {
+        id: 'a7449aaa-8fda-44b4-86f2-b0dfb527d30f',
+        title: 'Thị trường BDS TP.HCM Q4/2025: Tăng trưởng ổn định 8.5%',
+        description:
+          'Thị trường bất động sản TP.HCM trong quý 4/2025 đã ghi nhận mức tăng trưởng 8.5% so với cùng kỳ năm trước, với phân khúc căn hộ cao cấp dẫn đầu xu hướng tăng giá.',
+        type: 'MACRO',
+        content:
+          '<p><strong style="font-size: 24px;">Phân khúc căn hộ cao cấp dẫn đầu</strong></p><p><span style="font-size: 16px;">Theo báo cáo từ Hiệp hội Bất động sản TP.HCM, phân khúc căn hộ cao cấp đã tăng trưởng 12% về giá bán, trong khi nhà phố và biệt thự tăng 6.2%. Điều này cho thấy sự phân hóa rõ rệt trong thị trường.</span></p><p><span style="font-size: 16px;">Các dự án tại khu vực trung tâm như Quận 1, Quận 3, và Quận 7 tiếp tục thu hút sự quan tâm của nhà đầu tư nhờ vào vị trí đắc địa và hạ tầng hoàn thiện.</span></p><p><br></p><p><strong style="font-size: 24px;">Nguồn cung mới tăng mạnh</strong></p><p><span style="font-size: 16px;">Quý 4/2025 chứng kiến sự gia tăng đáng kể về nguồn cung mới với 15 dự án được mở bán, tổng cộng hơn 8,000 căn hộ ra thị trường. Điều này giúp cân bằng cung cầu và ổn định giá cả.</span></p><p><span style="font-size: 16px;">Đặc biệt, các dự án tại khu Đông như Thủ Đức, Quận 9 đang trở thành tâm điểm với mức giá hợp lý và tiềm năng phát triển cao.</span></p><p><br></p><p><strong style="font-size: 24px;">Dự báo cho năm 2025</strong></p><p><span style="font-size: 16px;">Các chuyên gia dự báo thị trường BDS TP.HCM sẽ tiếp tục tăng trưởng ổn định trong năm 2025 với mức tăng khoảng 6-8%. Các yếu tố hỗ trợ bao gồm:</span></p><ol><li data-list="bullet"><span class="ql-ui" contenteditable="false"></span><span style="font-size: 16px;">Hạ tầng giao thông được cải thiện với các tuyến metro mới</span></li><li data-list="bullet"><span class="ql-ui" contenteditable="false"></span><span style="font-size: 16px;">Chính sách hỗ trợ người mua nhà lần đầu</span></li><li data-list="bullet"><span class="ql-ui" contenteditable="false"></span><span style="font-size: 16px;">Dòng vốn FDI tiếp tục đổ vào thị trường BDS</span></li><li data-list="bullet"><span class="ql-ui" contenteditable="false"></span><span style="font-size: 16px;">Nhu cầu ở thực tăng cao do dân số trẻ</span></li></ol><p><br></p>',
+        category: 'MARKET',
+        readTime: '',
+        views: 0,
+        image: {
+          url: 'https://res.cloudinary.com/dpinnqt92/image/upload/v1761015808/IQI/articles/yb82dbts5h8bgbnm8fsk.webp',
+          publicId: 'IQI/articles/yb82dbts5h8bgbnm8fsk',
+        },
+        isFeatured: true,
+        isPublished: true,
+        createdAt: '2025-10-02T09:50:44.076Z',
+        updatedAt: '2025-10-21T03:03:30.173Z',
+        createdBy: 'eb95b8ac-141f-4c36-a21a-486fcac2cb0f',
+        updatedBy: 'eb95b8ac-141f-4c36-a21a-486fcac2cb0f',
+        tags: ['Đầu tư', 'Căn hộ'],
       },
     ],
   });
@@ -126,6 +129,160 @@ async function main() {
   const partners = await prisma.partner.createMany({
     data: [
       {
+        id: '9c5ec840-3355-49bb-8469-b9a616181e2f',
+        name: 'Gamuda Land',
+        category: 'DEVELOPER',
+        shortDescription: 'Chủ đầu tư quốc tế',
+        description:
+          'Nhà phát triển bất động sản quốc tế với các dự án quy mô lớn.',
+        countryCount: null,
+        agentCount: null,
+        projectCount: 2,
+        partnershipYear: 2025,
+        specialties: ['Township', 'Residential', 'Park-integrated'],
+        achievements: ['International Developer', 'Master Plan Excellence'],
+        benefits: Prisma.JsonNull,
+        image: {
+          url: 'https://res.cloudinary.com/dpinnqt92/image/upload/v1761017824/IQI/partners/obzsnytntknal14giuam.png',
+          publicId: 'IQI/partners/obzsnytntknal14giuam',
+        },
+        loanRate: null,
+        maxLoan: null,
+        revenue: '77.8 triệu USD',
+        createdAt: '2025-10-21T03:36:53.730Z',
+        updatedAt: '2025-10-21T03:37:05.076Z',
+      },
+      {
+        id: '63f35512-50b1-41d8-ad7d-27bfb051cc40',
+        name: 'Ecopark',
+        category: 'DEVELOPER',
+        shortDescription: 'Chủ đầu tư xanh',
+        description:
+          'Tập trung vào các dự án bất động sản xanh, thân thiện với môi trường.',
+        countryCount: null,
+        agentCount: null,
+        projectCount: 2,
+        partnershipYear: 2025,
+        specialties: ['Eco-living', 'Township', 'Residential'],
+        achievements: ['Green Developer', 'Sustainable Design'],
+        benefits: Prisma.JsonNull,
+        image: {
+          url: 'https://res.cloudinary.com/dpinnqt92/image/upload/v1761017755/IQI/partners/a8ylad0vfru4dq6gprm0.png',
+          publicId: 'IQI/partners/a8ylad0vfru4dq6gprm0',
+        },
+        loanRate: null,
+        maxLoan: null,
+        revenue: '54.9 triệu USD',
+        createdAt: '2025-10-21T03:35:55.974Z',
+        updatedAt: '2025-10-21T03:35:55.974Z',
+      },
+      {
+        id: '4020a59f-092b-4a1c-819c-5d035754132e',
+        name: 'PropTech Asia',
+        category: 'INTERNATIONAL',
+        shortDescription: 'Nền tảng công nghệ BĐS',
+        description:
+          'Đơn vị tiên phong trong giải pháp công nghệ cho bất động sản tại Châu Á, tập trung vào số hóa và dữ liệu.',
+        countryCount: 10,
+        agentCount: 12000,
+        projectCount: null,
+        partnershipYear: 2025,
+        specialties: Prisma.JsonNull,
+        achievements: [
+          'Digital Transformation Award',
+          'AI Adoption Leader',
+          'PropTech Accelerator',
+        ],
+        benefits: Prisma.JsonNull,
+        image: {
+          url: 'https://res.cloudinary.com/dpinnqt92/image/upload/v1761017561/IQI/partners/skuquhxy416dqxekcyuj.png',
+          publicId: 'IQI/partners/skuquhxy416dqxekcyuj',
+        },
+        loanRate: null,
+        maxLoan: null,
+        revenue: null,
+        createdAt: '2025-10-21T03:32:42.053Z',
+        updatedAt: '2025-10-21T03:32:42.053Z',
+      },
+      {
+        id: 'dfe575a9-be13-45d0-bd67-21a144bae2d6',
+        name: 'CBRE',
+        category: 'INTERNATIONAL',
+        shortDescription: 'Dịch vụ BĐS thương mại',
+        description:
+          'Tập đoàn dịch vụ bất động sản lớn nhất thế giới với hơn 100 quốc gia hoạt động.',
+        countryCount: 100,
+        agentCount: 115000,
+        projectCount: null,
+        partnershipYear: 2016,
+        specialties: Prisma.JsonNull,
+        achievements: [
+          'Global Commercial Leader',
+          'Top Investment Partner',
+          'Real Estate Service Excellence',
+        ],
+        benefits: Prisma.JsonNull,
+        image: {
+          url: 'https://res.cloudinary.com/dpinnqt92/image/upload/v1761017496/IQI/partners/cekqdoj4eatrkec3uwen.png',
+          publicId: 'IQI/partners/cekqdoj4eatrkec3uwen',
+        },
+        loanRate: null,
+        maxLoan: null,
+        revenue: null,
+        createdAt: '2025-10-21T03:15:10.445Z',
+        updatedAt: '2025-10-21T03:31:37.386Z',
+      },
+      {
+        id: '80f98c2f-81d6-46db-8eec-972109673394',
+        name: 'Techcombank',
+        category: 'BANK',
+        shortDescription: 'Ngân hàng TMCP Kỹ thương Việt Nam',
+        description: null,
+        countryCount: null,
+        agentCount: null,
+        projectCount: null,
+        partnershipYear: 2025,
+        specialties: Prisma.JsonNull,
+        achievements: Prisma.JsonNull,
+        benefits: ['Vay online 100%', 'Xét duyệt nhanh', 'Không phí trả trước'],
+        image: {
+          url: 'https://res.cloudinary.com/dpinnqt92/image/upload/v1761016407/IQI/partners/ctlhwgfao98ofkchtvva.png',
+          publicId: 'IQI/partners/ctlhwgfao98ofkchtvva',
+        },
+        loanRate: '6.8%/năm',
+        maxLoan: '80%',
+        revenue: null,
+        createdAt: '2025-10-21T03:13:28.258Z',
+        updatedAt: '2025-10-21T03:13:28.258Z',
+      },
+      {
+        id: 'ce3ed2bf-cf5f-4773-8a00-38cb2a5826cf',
+        name: 'MB Bank',
+        category: 'BANK',
+        shortDescription: 'Ngân hàng TMCP Quân đội',
+        description: null,
+        countryCount: null,
+        agentCount: null,
+        projectCount: null,
+        partnershipYear: 2025,
+        specialties: Prisma.JsonNull,
+        achievements: Prisma.JsonNull,
+        benefits: [
+          'Ân hạn gốc 12 tháng',
+          'Tư vấn miễn phí',
+          'Giao dịch bảo mật',
+        ],
+        image: {
+          url: 'https://res.cloudinary.com/dpinnqt92/image/upload/v1761016343/IQI/partners/l71kjdnb0ampiy8limu5.png',
+          publicId: 'IQI/partners/l71kjdnb0ampiy8limu5',
+        },
+        loanRate: '6.9%/năm',
+        maxLoan: '80%',
+        revenue: null,
+        createdAt: '2025-10-21T03:12:24.436Z',
+        updatedAt: '2025-10-21T03:12:24.436Z',
+      },
+      {
         id: 'b4a7aec4-3365-4244-84df-bccfcc893351',
         name: 'Vietcombank',
         category: 'BANK',
@@ -139,14 +296,14 @@ async function main() {
         achievements: Prisma.JsonNull,
         benefits: ['Hỗ trợ 24/7', 'Thủ tục rõ ràng', 'Nhanh chóng tiện lợi'],
         image: {
-          url: 'https://res.cloudinary.com/dpinnqt92/image/upload/v1759459201/IQI/partners/wrrb2w277mvknjngqwcl.png',
-          publicId: 'IQI/partners/wrrb2w277mvknjngqwcl',
+          url: 'https://res.cloudinary.com/dpinnqt92/image/upload/v1761015597/IQI/partners/t4cf8zeba00lqvcuftw9.png',
+          publicId: 'IQI/partners/t4cf8zeba00lqvcuftw9',
         },
         loanRate: '6.5%/năm',
         maxLoan: '85%',
         revenue: null,
         createdAt: '2025-10-03T02:39:38.130Z',
-        updatedAt: '2025-10-03T02:49:43.335Z',
+        updatedAt: '2025-10-21T02:59:58.413Z',
       },
       {
         id: 'd0b76ab7-4780-472e-9463-36f335e09013',
@@ -167,14 +324,14 @@ async function main() {
         ],
         benefits: Prisma.JsonNull,
         image: {
-          url: 'https://res.cloudinary.com/dpinnqt92/image/upload/v1759375533/IQI/partners/m3qanxv4a2xrx9ig7uoc.png',
-          publicId: 'IQI/partners/m3qanxv4a2xrx9ig7uoc',
+          url: 'https://res.cloudinary.com/dpinnqt92/image/upload/v1761015576/IQI/partners/beqpfntfq1wfw7x8no7i.png',
+          publicId: 'IQI/partners/beqpfntfq1wfw7x8no7i',
         },
         loanRate: null,
         maxLoan: null,
         revenue: null,
         createdAt: '2025-10-02T03:09:06.290Z',
-        updatedAt: '2025-10-03T02:47:43.432Z',
+        updatedAt: '2025-10-21T02:59:37.474Z',
       },
       {
         id: '054d81b2-c776-4b38-bd8a-a0ce003ac1a4',
@@ -195,14 +352,14 @@ async function main() {
         ],
         benefits: Prisma.JsonNull,
         image: {
-          url: 'https://res.cloudinary.com/dpinnqt92/image/upload/v1759375515/IQI/partners/jsolbmjawvgdwoqdisag.png',
-          publicId: 'IQI/partners/jsolbmjawvgdwoqdisag',
+          url: 'https://res.cloudinary.com/dpinnqt92/image/upload/v1761015624/IQI/partners/i8yelqgceosr6ff5jcdx.png',
+          publicId: 'IQI/partners/i8yelqgceosr6ff5jcdx',
         },
         loanRate: null,
         maxLoan: null,
         revenue: '49.7 triệu USD',
         createdAt: '2025-10-02T03:02:29.967Z',
-        updatedAt: '2025-10-02T03:24:52.362Z',
+        updatedAt: '2025-10-21T03:00:25.234Z',
       },
     ],
   });
