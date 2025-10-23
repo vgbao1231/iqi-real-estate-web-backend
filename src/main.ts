@@ -6,7 +6,7 @@ import { AppModule } from './app.module';
 
 const allowedOrigins = [
   'https://iqi-real-estate-web.vercel.app', // Frontend chính (Production Vercel)
-  'http://localhost:3000', // Môi trường local development (ví dụ: React chạy ở cổng 3000)
+  'http://localhost:3000', // Môi trường local development
   // More....
 ];
 

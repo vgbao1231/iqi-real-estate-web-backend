@@ -5,4 +5,6 @@ export enum Entity {
   PARTNER = 'Partner',
   ARTICLE = 'Article',
   CONTACT = 'Contact',
+  OTP = 'Otp',
+  MERCHANDISE = 'Merchandise',
 }

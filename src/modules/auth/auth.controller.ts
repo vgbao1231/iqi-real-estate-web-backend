@@ -106,4 +106,14 @@ export class AuthController {
   ) {
     return this.authService.changePassword(userId, body);
   }
+
+  @Post('otp/send')
+  async sendOtp(@Body() data: any) {
+    return this.authService.sendOtp(data);
+  }
+
+  @Post('otp/verify')
+  async verifyOtp(@Body() data: any) {
+    return this.authService.verifyOtp(data);
+  }
 }

@@ -7,6 +7,7 @@ import { AppError } from 'src/common/exceptions/app-error';
 import { handlePrismaError } from 'src/common/utils/prisma-error.handler';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { EmailService } from '../email/email.service';
 import { ChangePasswordDto } from './dto/ChangePassworDto';
 import { UpdateProfileDto } from './dto/UpdateProfileDto';
 
@@ -24,6 +25,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private cloudinaryService: CloudinaryService,
+    private emailService: EmailService,
   ) {}
 
   async login(email: string, password: string) {
@@ -195,36 +197,116 @@ export class AuthService {
   }
 
   async changePassword(userId: string, data: ChangePasswordDto) {
-    // 1. Kiểm tra xác nhận mật khẩu
-    if (data.newPassword !== data.confirmNewPassword) {
-      throw AppError.BadRequest('Mật khẩu mới và xác nhận mật khẩu không khớp');
+    try {
+      // 1. Kiểm tra xác nhận mật khẩu
+      if (data.newPassword !== data.confirmNewPassword) {
+        throw AppError.BadRequest(
+          'Mật khẩu mới và mật khẩu xác nhận không khớp',
+        );
+      }
+
+      // 2. Lấy user và mật khẩu đã băm
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, password: true },
+      });
+
+      if (!user) {
+        throw AppError.NotFound(Entity.USER);
+      }
+
+      // 3. So sánh mật khẩu hiện tại với mật khẩu đã băm trong DB
+      const isMatch = await bcrypt.compare(data.currentPassword, user.password);
+
+      if (!isMatch) {
+        throw AppError.Forbidden('Mật khẩu hiện tại không đúng');
+      }
+
+      // 4. Băm mật khẩu mới
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(data.newPassword, salt);
+
+      // 5. Cập nhật mật khẩu trong DB
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { password: hashedPassword },
+      });
+
+      return { message: 'Đổi mật khẩu thành công' };
+    } catch (error) {
+      console.error('Prisma Change Password Error:', error);
+      handlePrismaError(error, Entity.USER);
     }
+  }
 
-    // 2. Lấy user và mật khẩu đã băm
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { id: true, password: true },
-    });
-    if (!user) {
-      throw AppError.NotFound(Entity.USER);
+  async sendOtp(data: { email: string }) {
+    try {
+      const { email } = data;
+
+      // 1. Tạo mã OTP và thời gian hết hạn
+      const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // Hết hạn sau 5 phút
+
+      // 2. LƯU/CẬP NHẬT OTP vào bảng Otp (Upsert)
+      await this.prisma.otp.upsert({
+        where: { email },
+        update: { otpCode, expiresAt },
+        create: { email, otpCode, expiresAt },
+      });
+
+      // 3. Gửi OTP qua email.
+      await this.emailService.sendOtp(email, otpCode, 'Khách hàng quan tâm');
+
+      return {
+        message:
+          'Mã xác thực đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư để hoàn tất.',
+      };
+    } catch (error) {
+      console.error('Send OTP Error:', error);
+      // Ở đây, lỗi thường liên quan đến DB (Prisma) hoặc Gửi Email.
+      handlePrismaError(error, Entity.OTP); // Dùng Entity chung hoặc 'OTP'
     }
+  }
 
-    // 3. So sánh mật khẩu hiện tại với mật khẩu đã băm trong DB
-    const isMatch = await bcrypt.compare(data.currentPassword, user.password);
-    if (!isMatch) {
-      throw AppError.Forbidden('Mật khẩu hiện tại không đúng');
+  async verifyOtp(data: { email: string; otp: string }) {
+    try {
+      const { email, otp } = data;
+
+      // 1. Tìm bản ghi OTP dựa trên email
+      const otpRecord = await this.prisma.otp.findUnique({
+        where: { email },
+      });
+
+      if (!otpRecord) {
+        throw AppError.BadRequest(
+          'Email chưa được gửi mã OTP hoặc đã hết hạn.',
+        );
+      }
+
+      // 2. Kiểm tra mã OTP
+      if (otpRecord.otpCode !== otp) {
+        throw AppError.Forbidden('Mã OTP không hợp lệ.');
+      }
+
+      // 3. Kiểm tra thời gian hết hạn
+      if (otpRecord.expiresAt < new Date()) {
+        // Xóa mã OTP đã hết hạn
+        await this.prisma.otp.delete({ where: { email } });
+        throw AppError.Forbidden('Mã OTP đã hết hạn. Vui lòng yêu cầu mã mới.');
+      }
+
+      // 4. Xác thực thành công: Xóa mã OTP đã sử dụng
+      await this.prisma.otp.delete({ where: { email } });
+
+      // Trả về thông báo thành công hoặc một token/trạng thái cho phép user đổi mật khẩu
+      return {
+        message: 'Xác thực OTP thành công.',
+        // Ví dụ: return một temporary token để xác nhận bước tiếp theo
+      };
+    } catch (error) {
+      console.error('Prisma Verify OTP Error:', error);
+      // Xử lý lỗi Prisma và AppError
+      handlePrismaError(error, Entity.OTP);
     }
-
-    // 4. Băm mật khẩu mới
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(data.newPassword, salt);
-
-    // 5. Cập nhật mật khẩu trong DB
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { password: hashedPassword },
-    });
-
-    return { message: 'Đổi mật khẩu thành công' };
   }
 }
