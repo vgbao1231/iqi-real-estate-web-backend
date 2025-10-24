@@ -108,12 +108,12 @@ export class AuthController {
   }
 
   @Post('otp/send')
-  async sendOtp(@Body() data: any) {
+  async sendOtp(@Body() data: { email: string }) {
     return this.authService.sendOtp(data);
   }
 
   @Post('otp/verify')
-  async verifyOtp(@Body() data: any) {
+  async verifyOtp(@Body() data: { email: string; otp: string }) {
     return this.authService.verifyOtp(data);
   }
 }

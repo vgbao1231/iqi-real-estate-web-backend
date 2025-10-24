@@ -36,7 +36,7 @@ import { UsersModule } from './modules/user/user.module';
           host: configService.get<string>('MAIL_HOST'), // Ví dụ: 'smtp.gmail.com'
           port: configService.get<number>('MAIL_PORT'), // Ví dụ: 587
           secure: configService.get('MAIL_SECURE') === 'true', // Dùng TLS/SSL
-          requireTLS: true,
+          requireTLS: false,
           auth: {
             user: configService.get<string>('MAIL_USER'), // Địa chỉ email gửi
             pass: configService.get<string>('MAIL_PASSWORD'), // Mật khẩu/App Password
