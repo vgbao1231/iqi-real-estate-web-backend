@@ -17,13 +17,11 @@ import { MerchandiseService } from './merchandise.service';
 export class MerchandiseController {
   constructor(private readonly merchandiseService: MerchandiseService) {}
   @Get()
-  @UseGuards(JwtAuthGuard)
   findAll() {
     return this.merchandiseService.findAll();
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
   findOne(@Param('id') id: string) {
     return this.merchandiseService.findOne(id);
   }
